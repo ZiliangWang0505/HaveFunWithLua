@@ -74,17 +74,29 @@ static int getsize(lua_State *L)
     return 1;
 }
 
-static const struct luaL_Reg arraylib [] = {
+int array2string(lua_State *L) {
+    BitArray *a = checkarrary(L);
+    lua_pushfstring(L, "array(%d)", a->size);
+    return 1;
+}
+
+static const struct luaL_Reg arraylib_f [] = {
     {"new", newarray},
-    {"set", setarray},
-    {"get", getarray},
-    {"size", getsize},
+    {NULL, NULL}
+};
+
+static const struct luaL_Reg arraylib_m [] = {
+    {"__newindex", setarray},
+    {"__index", getarray},
+    {"__len", getsize},
+    {"__tostring", array2string},
     {NULL, NULL}
 };
 
 int luaopen_array(lua_State *L)
 {
     luaL_newmetatable(L, "LuaBook.array");
-    luaL_newlib(L, arraylib);
+    luaL_setfuncs(L, arraylib_m, 0);
+    luaL_newlib(L, arraylib_f);
     return 1;
 }
