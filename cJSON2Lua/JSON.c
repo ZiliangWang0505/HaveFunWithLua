@@ -9,6 +9,8 @@ static int newjson(lua_State *L) {
     const char *jsonStr = luaL_checkstring(L, 1);
     cJSON *json = (cJSON *)lua_newuserdata(L, sizeof(cJSON));
     json->child = cJSON_Parse(jsonStr);
+    luaL_getmetatable(L, "json");
+    lua_setmetatable(L, -2);
     return 1;
 }
 
@@ -79,17 +81,19 @@ static int setjson(lua_State *L) {
 
 static const struct luaL_Reg arraylib_f [] = {
     {"new", newjson},
-    {"get", getjson},
-    {"set", setjson},
     {NULL, NULL}
 };
 
 static const struct luaL_Reg arraylib_m [] = {
+    {"__newindex", setjson},
+    {"__index", getjson},
     {NULL, NULL}
 };
 
 int luaopen_json(lua_State *L)
 {
+    luaL_newmetatable(L, "json");
+    luaL_setfuncs(L, arraylib_m, 0);
     luaL_newlib(L, arraylib_f);
     return 1;
 }
